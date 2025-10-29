@@ -1,0 +1,74 @@
+
+import React, { useState } from 'react';
+import { CalculatorForm } from './components/CalculatorForm';
+import { ResultsDisplay } from './components/ResultsDisplay';
+import { type FormData, type CalculationResult } from './types';
+import { calculateNTNB } from './utils/calculator';
+import { TreasureIcon } from './components/Icons';
+
+export default function App(): React.ReactElement {
+  const [result, setResult] = useState<CalculationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleCalculate = (formData: FormData) => {
+    try {
+      const calculation = calculateNTNB(formData);
+      setResult(calculation);
+      setError(null);
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message);
+      } else {
+        setError('An unknown error occurred during calculation.');
+      }
+      setResult(null);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col items-center p-4 sm:p-6 lg:p-8">
+      <div className="w-full max-w-6xl mx-auto">
+        <header className="text-center mb-8">
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <TreasureIcon className="w-10 h-10 text-amber-400" />
+            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
+              Calculadora de Rentabilidade NTN-B
+            </h1>
+          </div>
+          <p className="text-lg text-gray-400">
+            Projete os ganhos do seu investimento no Tesouro Direto.
+          </p>
+        </header>
+
+        <main className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="lg:col-span-2">
+            <CalculatorForm onCalculate={handleCalculate} />
+          </div>
+          <div className="lg:col-span-3">
+            {error && (
+              <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg">
+                <p className="font-bold">Erro no Cálculo</p>
+                <p>{error}</p>
+              </div>
+            )}
+            {!result && !error && (
+              <div className="h-full flex items-center justify-center bg-gray-800/50 border-2 border-dashed border-gray-700 rounded-lg p-8">
+                <p className="text-gray-400 text-center">
+                  Preencha os dados ao lado e clique em "Calcular" para ver a projeção dos seus resultados.
+                </p>
+              </div>
+            )}
+            {result && <ResultsDisplay result={result} />}
+          </div>
+        </main>
+
+        <footer className="text-center mt-12 text-gray-500 text-sm">
+          <p>
+            Esta é uma ferramenta de simulação. A rentabilidade real pode variar.
+            Cálculos baseados na metodologia de projeção de fluxo de caixa.
+          </p>
+        </footer>
+      </div>
+    </div>
+  );
+}

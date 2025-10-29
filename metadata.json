@@ -1,0 +1,5 @@
+{
+  "name": "NTN-B Profitability Calculator",
+  "description": "A calculator to project the profitability of Brazilian National Treasury Notes, Series B (NTN-B) based on user-provided investment details. It estimates the total gross return, profit, and provides a detailed breakdown of future cash flows from coupons and principal redemption.",
+  "requestFramePermissions": []
+}
