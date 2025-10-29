@@ -5,7 +5,7 @@ Uma calculadora profissional para projeção de rentabilidade de títulos NTN-B 
 ## Características
 
 ### Cálculos Precisos
-- **Taxa de Cupom Correta**: 6% ao ano, distribuído em 3% semestralmente (taxa simples)
+- **Taxa de Cupom Correta**: 6% ao ano, distribuído como taxa equivalente semestral de 2.956% [(1.06)^(1/2) - 1]
 - **Cupons Pro-Rata**: Cálculo proporcional para compras entre datas de cupom
 - **Projeção de IPCA**: Atualização do VNA (Valor Nominal Atualizado) com inflação projetada
 - **Taxa de Custódia B3**: Desconto automático de 0.20% a.a. para posições acima de R$ 10.000
@@ -31,18 +31,24 @@ VNA(t) = VNA(compra) × (1 + IPCA)^anos
 ```
 
 ### 2. Cupons Semestrais
-Os cupons são pagos em 15 de maio e 15 de novembro de cada ano:
+Os cupons são pagos em 15 de maio e 15 de novembro de cada ano.
+A taxa semestral é calculada pela **taxa equivalente composta** da taxa anual de 6%:
 
 ```
-Cupom = VNA(data_cupom) × 3% × Quantidade
+Taxa Semestral = (1.06)^(1/2) - 1 = 0.029563 (2.956%)
+Cupom = VNA(data_cupom) × 2.956% × Quantidade
 ```
+
+**Por que não é simplesmente 3%?**
+Porque os juros são compostos. Aplicando 2.956% em cada semestre:
+(1.02956)² = 1.06 (6% ao ano)
 
 ### 3. Cupons Pro-Rata
 Para compras entre datas de cupom, calcula-se proporcionalmente:
 
 ```
 Fator Pro-Rata = Dias até próximo cupom / Total de dias do período
-Cupom Pro-Rata = VNA × 3% × Fator Pro-Rata × Quantidade
+Cupom Pro-Rata = VNA × 2.956% × Fator Pro-Rata × Quantidade
 ```
 
 ### 4. Taxa de Custódia B3
@@ -124,10 +130,10 @@ npm run preview
 
 ## Melhorias Implementadas (2025-10-29)
 
-1. **Correção da Taxa de Cupom**: Alterada de taxa equivalente composta para taxa simples (3% semestral)
+1. **Taxa de Cupom Conforme Tesouro Nacional**: Usa taxa equivalente composta [(1.06)^(1/2) - 1 = 2.956%]
 2. **Módulo de Feriados B3**: Criado sistema completo de validação de dias úteis
 3. **Cupons Pro-Rata**: Implementado cálculo proporcional para compras entre cupons
-4. **Taxa de Custódia**: Adicionado desconto automático da taxa B3
+4. **Taxa de Custódia**: Adicionado desconto automático da taxa B3 (0.20% a.a.)
 5. **Validações Aprimoradas**: Verificação de dias úteis e datas válidas
 6. **Cálculo de Tempo**: Uso de 252 dias úteis por ano (mais preciso)
 

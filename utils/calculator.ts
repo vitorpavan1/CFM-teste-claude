@@ -1,8 +1,11 @@
 import { type FormData, type CalculationResult, type CashFlow } from '../types';
 import { adjustToBusinessDay, isBusinessDay } from './holidays';
 
-// NTN-B pays 6% annual coupon, distributed as 3% semi-annually (simple rate, not compounded)
-const SEMI_ANNUAL_COUPON_RATE = 0.03;
+// NTN-B pays 6% annual coupon
+// Semi-annual rate is calculated using compound interest (equivalent rate):
+// (1 + semi_annual_rate)^2 = 1.06
+// semi_annual_rate = (1.06)^(1/2) - 1 ≈ 0.029563 or 2.956%
+const SEMI_ANNUAL_COUPON_RATE = Math.pow(1.06, 0.5) - 1;
 
 // B3 custody fee: 0.20% per year on positions above R$ 10,000
 const B3_CUSTODY_FEE_RATE = 0.002; // 0.20% annually
