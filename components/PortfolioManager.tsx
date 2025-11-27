@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { type BondItem, type FormData } from '../types';
 import { CalculatorForm } from './CalculatorForm';
@@ -8,8 +7,13 @@ import { Card } from './ui/Card';
 import { TrashIcon, CalendarIcon, CurrencyDollarIcon, TrendingUpIcon, PlusIcon } from './Icons';
 import { ResultsDisplay } from './ResultsDisplay';
 
-export function PortfolioManager({ isDarkMode }: { isDarkMode: boolean }): React.ReactElement {
-  const [bonds, setBonds] = useState<BondItem[]>([]);
+interface PortfolioManagerProps {
+  isDarkMode: boolean;
+  bonds: BondItem[];
+  setBonds: React.Dispatch<React.SetStateAction<BondItem[]>>;
+}
+
+export function PortfolioManager({ isDarkMode, bonds, setBonds }: PortfolioManagerProps): React.ReactElement {
   const [selectedBondId, setSelectedBondId] = useState<string | null>(null);
 
   const handleAddBond = (data: FormData) => {
@@ -157,7 +161,7 @@ export function PortfolioManager({ isDarkMode }: { isDarkMode: boolean }): React
                 <PlusIcon className="w-8 h-8 text-gray-400" />
               </div>
               <p className="text-lg font-medium text-gray-600 dark:text-gray-300">Sua carteira está vazia</p>
-              <p className="text-sm text-gray-500">Adicione títulos usando o formulário para ver a projeção consolidada.</p>
+              <p className="text-sm text-gray-500">Adicione títulos usando o formulário ou vá para a aba "Importar".</p>
             </div>
           )}
         </div>

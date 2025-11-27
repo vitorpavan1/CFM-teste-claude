@@ -1,42 +1,41 @@
-
 import React, { useState, useEffect } from 'react';
 import { CalculatorForm } from './components/CalculatorForm';
 import { ResultsDisplay } from './components/ResultsDisplay';
 import { PortfolioManager } from './components/PortfolioManager';
-import { type FormData, type CalculationResult } from './types';
+import { FileImporter } from './components/FileImporter';
+import { type FormData, type CalculationResult, type BondItem } from './types';
 import { calculateNTNB } from './utils/calculator';
-import { TreasureIcon, CalculatorIcon, ChartBarIcon, SunIcon, MoonIcon } from './components/Icons';
+import { TreasureIcon, CalculatorIcon, ChartBarIcon, SunIcon, MoonIcon, UploadIcon } from './components/Icons';
 
 export default function App(): React.ReactElement {
-  const [activeTab, setActiveTab] = useState<'individual' | 'portfolio'>('individual');
+  const [activeTab, setActiveTab] = useState<'individual' | 'portfolio' | 'import'>('individual');
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-
-  // Initialize Theme
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    } else {
-      setIsDarkMode(false);
-      document.documentElement.classList.remove('dark');
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        return savedTheme === 'dark';
+      }
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
     }
-  }, []);
+    return true; 
+  });
 
-  const toggleTheme = () => {
-    const newMode = !isDarkMode;
-    setIsDarkMode(newMode);
-    if (newMode) {
+  const [portfolioBonds, setPortfolioBonds] = useState<BondItem[]>([]);
+
+  useEffect(() => {
+    if (isDarkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
       localStorage.setItem('theme', 'light');
     }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(prev => !prev);
   };
 
   const handleCalculate = (formData: FormData) => {
@@ -52,6 +51,11 @@ export default function App(): React.ReactElement {
       }
       setResult(null);
     }
+  };
+
+  const handleBulkImport = (newBonds: BondItem[]) => {
+      setPortfolioBonds(prev => [...prev, ...newBonds]);
+      setActiveTab('portfolio'); 
   };
 
   return (
@@ -97,13 +101,24 @@ export default function App(): React.ReactElement {
                 <ChartBarIcon className="w-4 h-4 mr-2" />
                 Carteira
               </button>
+              <button
+                onClick={() => setActiveTab('import')}
+                className={`flex items-center px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                  activeTab === 'import'
+                    ? 'bg-white dark:bg-gray-600 text-green-700 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                <UploadIcon className="w-4 h-4 mr-2" />
+                Importar
+              </button>
             </div>
 
             {/* Theme Toggle */}
             <button 
               onClick={toggleTheme}
-              className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              aria-label="Alternar tema"
+              className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 dark:focus:ring-offset-gray-900"
+              aria-label={isDarkMode ? "Mudar para modo claro" : "Mudar para modo escuro"}
             >
               {isDarkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
             </button>
@@ -132,21 +147,28 @@ export default function App(): React.ReactElement {
               >
                 Carteira
             </button>
+            <button
+                onClick={() => setActiveTab('import')}
+                className={`flex-1 py-3 text-sm font-medium text-center ${
+                  activeTab === 'import'
+                    ? 'text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400 bg-gray-50 dark:bg-gray-800'
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                Importar
+            </button>
         </div>
       </div>
 
       <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <main>
-          {activeTab === 'individual' ? (
+          {activeTab === 'individual' && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-              {/* Form Section */}
               <div className="lg:col-span-4 xl:col-span-3">
                 <div className="sticky top-24">
                   <CalculatorForm onCalculate={handleCalculate} mode="single" />
                 </div>
               </div>
-
-              {/* Results Section */}
               <div className="lg:col-span-8 xl:col-span-9">
                 {error && (
                   <div className="bg-red-100 dark:bg-red-900/50 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 p-4 rounded-lg mb-6 shadow-sm">
@@ -166,8 +188,16 @@ export default function App(): React.ReactElement {
                 {result && <ResultsDisplay result={result} isDarkMode={isDarkMode} />}
               </div>
             </div>
-          ) : (
-            <PortfolioManager isDarkMode={isDarkMode} />
+          )}
+
+          {activeTab === 'portfolio' && (
+            <PortfolioManager isDarkMode={isDarkMode} bonds={portfolioBonds} setBonds={setPortfolioBonds} />
+          )}
+
+          {activeTab === 'import' && (
+            <div className="max-w-3xl mx-auto">
+               <FileImporter onImport={handleBulkImport} />
+            </div>
           )}
         </main>
 
