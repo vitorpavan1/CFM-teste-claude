@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { type BondItem, type FormData } from '../types';
 import { CalculatorForm } from './CalculatorForm';
@@ -7,7 +8,7 @@ import { Card } from './ui/Card';
 import { TrashIcon, CalendarIcon, CurrencyDollarIcon, TrendingUpIcon, PlusIcon } from './Icons';
 import { ResultsDisplay } from './ResultsDisplay';
 
-export function PortfolioManager(): React.ReactElement {
+export function PortfolioManager({ isDarkMode }: { isDarkMode: boolean }): React.ReactElement {
   const [bonds, setBonds] = useState<BondItem[]>([]);
   const [selectedBondId, setSelectedBondId] = useState<string | null>(null);
 
@@ -39,36 +40,38 @@ export function PortfolioManager(): React.ReactElement {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
-        {/* Left Col: Form and List */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* Left Col: Form and List (3 columns on large) */}
+        <div className="lg:col-span-4 xl:col-span-3 space-y-6">
           <CalculatorForm onCalculate={() => {}} onAddToPortfolio={handleAddBond} mode="portfolio" />
           
           <Card>
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-semibold text-white">Títulos na Carteira</h3>
-                <span className="bg-gray-700 text-xs px-2 py-1 rounded-full">{bonds.length}</span>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Carteira</h3>
+                <span className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-2 py-1 rounded-full font-bold">{bonds.length}</span>
             </div>
             
             {bonds.length === 0 ? (
-              <p className="text-gray-500 text-sm text-center py-4">Nenhum título adicionado.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-8 italic border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
+                Nenhum título adicionado.
+              </p>
             ) : (
-              <div className="space-y-2 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
+              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
                 {bonds.map(bond => (
-                  <div key={bond.id} className="bg-gray-700/50 p-3 rounded-md flex justify-between items-center group hover:bg-gray-700 transition-colors">
+                  <div key={bond.id} className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-600 flex justify-between items-center group hover:bg-white dark:hover:bg-gray-700 hover:shadow-md transition-all duration-200">
                     <div 
                         className="cursor-pointer flex-grow"
                         onClick={() => setSelectedBondId(selectedBondId === bond.id ? null : bond.id)}
                     >
-                      <div className="text-sm font-bold text-cyan-200">{bond.name}</div>
-                      <div className="text-xs text-gray-400">
-                        Venc: {bond.maturityDate.split('-')[0]} | Qtd: {bond.quantity} | Taxa: {bond.purchaseRate}%
+                      <div className="text-sm font-bold text-cyan-700 dark:text-cyan-200">{bond.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Venc: {bond.maturityDate.split('-')[0]} • Qtd: {bond.quantity} • {bond.purchaseRate}%
                       </div>
                     </div>
                     <button 
                       onClick={() => handleRemoveBond(bond.id)}
-                      className="text-gray-500 hover:text-red-400 p-2 transition-colors"
+                      className="text-gray-400 hover:text-red-500 p-2 transition-colors rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
                       title="Remover título"
                     >
                       <TrashIcon className="w-4 h-4" />
@@ -80,36 +83,36 @@ export function PortfolioManager(): React.ReactElement {
           </Card>
         </div>
 
-        {/* Right Col: Consolidated Results */}
-        <div className="lg:col-span-2 space-y-6">
+        {/* Right Col: Consolidated Results (9 columns on large) */}
+        <div className="lg:col-span-8 xl:col-span-9 space-y-6">
           {portfolioResult ? (
             <>
                {/* Summary Cards */}
-               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                 <Card className="border-l-4 border-blue-500">
+               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                 <Card className="border-l-4 border-blue-500 bg-blue-50 dark:bg-gray-800">
                    <div className="flex items-center">
-                     <CurrencyDollarIcon className="w-8 h-8 text-blue-400 mr-3" />
+                     <CurrencyDollarIcon className="w-10 h-10 text-blue-500 dark:text-blue-400 mr-4" />
                      <div>
-                       <p className="text-xs text-gray-400">Total Investido</p>
-                       <p className="text-lg font-bold text-white">{formatCurrency(portfolioResult.totalInvested)}</p>
+                       <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wide">Total Investido</p>
+                       <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(portfolioResult.totalInvested)}</p>
                      </div>
                    </div>
                  </Card>
-                 <Card className="border-l-4 border-green-500">
+                 <Card className="border-l-4 border-green-500 bg-green-50 dark:bg-gray-800">
                    <div className="flex items-center">
-                     <TrendingUpIcon className="w-8 h-8 text-green-400 mr-3" />
+                     <TrendingUpIcon className="w-10 h-10 text-green-500 dark:text-green-400 mr-4" />
                      <div>
-                       <p className="text-xs text-gray-400">Total Retorno (Bruto)</p>
-                       <p className="text-lg font-bold text-white">{formatCurrency(portfolioResult.totalReturned)}</p>
+                       <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wide">Retorno Bruto Total</p>
+                       <p className="text-xl font-bold text-gray-900 dark:text-white">{formatCurrency(portfolioResult.totalReturned)}</p>
                      </div>
                    </div>
                  </Card>
-                  <Card className="border-l-4 border-purple-500">
+                  <Card className="border-l-4 border-purple-500 bg-purple-50 dark:bg-gray-800">
                    <div className="flex items-center">
-                     <CalendarIcon className="w-8 h-8 text-purple-400 mr-3" />
+                     <CalendarIcon className="w-10 h-10 text-purple-500 dark:text-purple-400 mr-4" />
                      <div>
-                       <p className="text-xs text-gray-400">Primeiro Fluxo</p>
-                       <p className="text-lg font-bold text-white">
+                       <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wide">Ano do 1º Fluxo</p>
+                       <p className="text-xl font-bold text-gray-900 dark:text-white">
                          {portfolioResult.consolidatedFlows.length > 0 ? portfolioResult.consolidatedFlows[0].year : '-'}
                        </p>
                      </div>
@@ -119,37 +122,42 @@ export function PortfolioManager(): React.ReactElement {
 
                {/* Consolidated Chart */}
                <Card>
-                 <h3 className="text-lg font-semibold text-white mb-4">Fluxo de Caixa Anual Consolidado</h3>
-                 <p className="text-sm text-gray-400 mb-6">Soma de todos os cupons e amortizações a receber por ano.</p>
-                 <div className="h-80">
+                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Fluxo de Caixa Anual Consolidado</h3>
+                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Soma de todos os cupons e amortizações projetados por ano.</p>
+                 <div className="h-96">
                    <ConsolidatedChart flows={portfolioResult.consolidatedFlows} />
                  </div>
                </Card>
 
                {/* Selected Bond Details (Drilldown) */}
                {selectedBondResult ? (
-                 <div className="mt-8 border-t border-gray-700 pt-8 animate-fade-in">
-                    <h3 className="text-xl font-bold text-cyan-400 mb-4 flex items-center">
-                        Detalhes: {selectedBondResult.name}
+                 <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8 animate-fade-in">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-2xl font-bold text-cyan-700 dark:text-cyan-400">
+                            Detalhes: {selectedBondResult.name}
+                        </h3>
                         <button 
                             onClick={() => setSelectedBondId(null)} 
-                            className="ml-auto text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded text-white font-normal"
+                            className="text-sm bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 px-4 py-2 rounded-lg text-gray-700 dark:text-white font-medium transition-colors"
                         >
                             Fechar Detalhes
                         </button>
-                    </h3>
-                    <ResultsDisplay result={selectedBondResult} />
+                    </div>
+                    <ResultsDisplay result={selectedBondResult} isDarkMode={isDarkMode} />
                  </div>
                ) : (
-                  <div className="bg-gray-800/50 border border-dashed border-gray-700 rounded-lg p-6 text-center text-gray-400">
-                      Clique em um título na lista à esquerda para ver seus detalhes individuais.
+                  <div className="bg-gray-100 dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 text-center">
+                      <p className="text-gray-500 dark:text-gray-400">Clique em um título na lista à esquerda para ver seus detalhes individuais (fluxos, VNA, PU).</p>
                   </div>
                )}
             </>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center bg-gray-800/30 border-2 border-dashed border-gray-700 rounded-lg p-12 text-gray-400">
-              <PlusIcon className="w-12 h-12 mb-4 opacity-50" />
-              <p>Adicione títulos à sua carteira para ver a projeção consolidada.</p>
+            <div className="h-full flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/30 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-12 text-gray-400">
+              <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-full mb-4">
+                <PlusIcon className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-lg font-medium text-gray-600 dark:text-gray-300">Sua carteira está vazia</p>
+              <p className="text-sm text-gray-500">Adicione títulos usando o formulário para ver a projeção consolidada.</p>
             </div>
           )}
         </div>

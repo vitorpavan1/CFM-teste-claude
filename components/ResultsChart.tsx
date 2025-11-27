@@ -6,6 +6,7 @@ import { type CashFlow } from '../types';
 interface ResultsChartProps {
   cashFlows: CashFlow[];
   purchaseDate: string;
+  isDarkMode?: boolean;
 }
 
 function parseDateAsUTC(dateString: string): Date {
@@ -13,7 +14,7 @@ function parseDateAsUTC(dateString: string): Date {
   return new Date(Date.UTC(year, month - 1, day));
 }
 
-export function ResultsChart({ cashFlows, purchaseDate }: ResultsChartProps): React.ReactElement {
+export function ResultsChart({ cashFlows, purchaseDate, isDarkMode = true }: ResultsChartProps): React.ReactElement {
   const pDate = parseDateAsUTC(purchaseDate);
 
   // Map to aggregate data by date (handling multiple flows on same day, e.g. Maturity + Coupon)
@@ -50,42 +51,48 @@ export function ResultsChart({ cashFlows, purchaseDate }: ResultsChartProps): Re
   
   const formatCurrency = (value: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
+  const gridColor = isDarkMode ? "#4a5568" : "#e2e8f0";
+  const textColor = isDarkMode ? "#a0aec0" : "#64748b";
+  const areaColor = "#06b6d4"; // Cyan-500
+
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const date = data.date.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
       
       return (
-        <div className="bg-gray-800 p-3 border border-gray-600 rounded shadow-lg max-w-xs z-50">
-          <p className="text-gray-200 font-bold mb-2 text-sm border-b border-gray-700 pb-1">{`Data: ${date}`}</p>
+        <div className={`${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'} p-4 border rounded-lg shadow-xl max-w-xs z-50`}>
+          <p className={`${isDarkMode ? 'text-gray-200 border-gray-700' : 'text-gray-800 border-gray-200'} font-bold mb-3 text-sm border-b pb-2`}>
+            {`Data: ${date}`}
+          </p>
           
           {data.events.length > 0 ? (
-            <div className="space-y-3 mb-3">
+            <div className="space-y-3 mb-3 max-h-40 overflow-y-auto custom-scrollbar">
               {data.events.map((event: any, idx: number) => (
-                <div key={idx} className="text-xs pl-2 border-l-2 border-gray-600">
-                  <p className="text-cyan-200 font-semibold mb-1">
+                <div key={idx} className={`text-xs pl-3 border-l-2 ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}>
+                  <p className="text-cyan-600 dark:text-cyan-400 font-semibold mb-1">
                     {event.type === 'J' ? 'Juros (Cupom)' : 'Resgate (Principal)'}
                   </p>
                   <div className="grid grid-cols-2 gap-x-4">
                     <div>
-                      <span className="text-gray-500 block text-[10px] uppercase tracking-wider">Valor Futuro</span>
-                      <span className="text-gray-300 font-mono">{formatCurrency(event.fv)}</span>
+                      <span className="text-gray-500 text-[10px] uppercase tracking-wider block">Valor Futuro</span>
+                      <span className={`font-mono ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{formatCurrency(event.fv)}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 block text-[10px] uppercase tracking-wider">Valor Presente</span>
-                      <span className="text-cyan-300 font-mono font-bold">{formatCurrency(event.pv)}</span>
+                      <span className="text-gray-500 text-[10px] uppercase tracking-wider block">Valor Presente</span>
+                      <span className={`font-mono font-bold ${isDarkMode ? 'text-cyan-300' : 'text-cyan-700'}`}>{formatCurrency(event.pv)}</span>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-             <p className="text-xs text-gray-400 mb-2 italic">Início do Investimento</p>
+             <p className="text-xs text-gray-500 italic">Início do Investimento</p>
           )}
 
-          <div className="pt-2 border-t border-gray-700 mt-2">
-            <span className="text-xs text-gray-400 uppercase tracking-wider">VP Acumulado</span>
-            <p className="text-lg font-bold text-white">{formatCurrency(data.value)}</p>
+          <div className={`pt-3 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} mt-2`}>
+            <span className="text-xs text-gray-500 uppercase tracking-wider block">VP Acumulado</span>
+            <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>{formatCurrency(data.value)}</p>
           </div>
         </div>
       );
@@ -107,35 +114,42 @@ export function ResultsChart({ cashFlows, purchaseDate }: ResultsChartProps): Re
         margin={{
           top: 10,
           right: 30,
-          left: 20,
+          left: 10,
           bottom: 0,
         }}
       >
         <defs>
           <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
-            <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
+            <stop offset="5%" stopColor={areaColor} stopOpacity={0.8}/>
+            <stop offset="95%" stopColor={areaColor} stopOpacity={0}/>
           </linearGradient>
         </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="#4a5568" />
+        <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
         <XAxis 
           dataKey="name"
-          tick={{ fill: '#a0aec0', fontSize: 12 }} 
-          stroke="#718096"
+          tick={{ fill: textColor, fontSize: 12 }} 
+          stroke={gridColor}
           interval="preserveStartEnd"
           minTickGap={30}
+          tickLine={false}
+          axisLine={false}
+          dy={10}
         />
         <YAxis 
           tickFormatter={yTickFormatter}
-          tick={{ fill: '#a0aec0', fontSize: 12 }} 
-          stroke="#718096"
+          tick={{ fill: textColor, fontSize: 12 }} 
+          stroke={gridColor}
           domain={[0, 'auto']}
+          tickLine={false}
+          axisLine={false}
+          dx={-10}
         />
         <Tooltip content={<CustomTooltip />} />
         <Area 
           type="monotone" 
           dataKey="value" 
-          stroke="#06b6d4" 
+          stroke={areaColor} 
+          strokeWidth={3}
           fillOpacity={1} 
           fill="url(#colorValue)" 
           activeDot={{ r: 6, strokeWidth: 2, stroke: '#fff' }} 

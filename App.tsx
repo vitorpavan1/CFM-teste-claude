@@ -1,16 +1,43 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CalculatorForm } from './components/CalculatorForm';
 import { ResultsDisplay } from './components/ResultsDisplay';
 import { PortfolioManager } from './components/PortfolioManager';
 import { type FormData, type CalculationResult } from './types';
 import { calculateNTNB } from './utils/calculator';
-import { TreasureIcon, CalculatorIcon, ChartBarIcon } from './components/Icons';
+import { TreasureIcon, CalculatorIcon, ChartBarIcon, SunIcon, MoonIcon } from './components/Icons';
 
 export default function App(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<'individual' | 'portfolio'>('individual');
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Initialize Theme
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
 
   const handleCalculate = (formData: FormData) => {
     try {
@@ -28,80 +55,127 @@ export default function App(): React.ReactElement {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 font-sans flex flex-col items-center p-4 sm:p-6 lg:p-8">
-      <div className="w-full max-w-6xl mx-auto">
-        <header className="text-center mb-8">
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <TreasureIcon className="w-10 h-10 text-amber-400" />
-            <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-              Calculadora de Rentabilidade NTN-B
-            </h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-200 font-sans flex flex-col items-center transition-colors duration-300">
+      
+      {/* Navbar / Header Area */}
+      <div className="w-full bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 mb-8 sticky top-0 z-20">
+        <div className="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <TreasureIcon className="w-8 h-8 text-amber-500 dark:text-amber-400" />
+            <div>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
+                Calculadora NTN-B
+              </h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">
+                Simulador Oficial B3/Tesouro
+              </p>
+            </div>
           </div>
-          <p className="text-lg text-gray-400">
-            Projete os ganhos do seu investimento no Tesouro Direto.
-          </p>
-        </header>
 
-        {/* Tab Navigation */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-gray-800 p-1 rounded-lg inline-flex shadow-lg">
-            <button
-              onClick={() => setActiveTab('individual')}
-              className={`flex items-center px-6 py-2 rounded-md transition-all duration-200 ${
-                activeTab === 'individual'
-                  ? 'bg-gray-700 text-white shadow-sm'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
+          <div className="flex items-center gap-4">
+            {/* Tab Navigation (Desktop) */}
+            <div className="hidden md:flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
+              <button
+                onClick={() => setActiveTab('individual')}
+                className={`flex items-center px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                  activeTab === 'individual'
+                    ? 'bg-white dark:bg-gray-600 text-cyan-700 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                <CalculatorIcon className="w-4 h-4 mr-2" />
+                Simulador
+              </button>
+              <button
+                onClick={() => setActiveTab('portfolio')}
+                className={`flex items-center px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${
+                  activeTab === 'portfolio'
+                    ? 'bg-white dark:bg-gray-600 text-amber-700 dark:text-white shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                }`}
+              >
+                <ChartBarIcon className="w-4 h-4 mr-2" />
+                Carteira
+              </button>
+            </div>
+
+            {/* Theme Toggle */}
+            <button 
+              onClick={toggleTheme}
+              className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-amber-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              aria-label="Alternar tema"
             >
-              <CalculatorIcon className="w-4 h-4 mr-2" />
-              Simulador Individual
-            </button>
-            <button
-              onClick={() => setActiveTab('portfolio')}
-              className={`flex items-center px-6 py-2 rounded-md transition-all duration-200 ${
-                activeTab === 'portfolio'
-                  ? 'bg-gray-700 text-cyan-300 shadow-sm'
-                  : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
-              <ChartBarIcon className="w-4 h-4 mr-2" />
-              Minha Carteira
+              {isDarkMode ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
             </button>
           </div>
         </div>
+        
+        {/* Mobile Tabs */}
+        <div className="md:hidden flex border-t border-gray-200 dark:border-gray-700">
+           <button
+                onClick={() => setActiveTab('individual')}
+                className={`flex-1 py-3 text-sm font-medium text-center ${
+                  activeTab === 'individual'
+                    ? 'text-cyan-600 dark:text-cyan-400 border-b-2 border-cyan-600 dark:border-cyan-400 bg-gray-50 dark:bg-gray-800'
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                Simulador
+            </button>
+            <button
+                onClick={() => setActiveTab('portfolio')}
+                className={`flex-1 py-3 text-sm font-medium text-center ${
+                  activeTab === 'portfolio'
+                    ? 'text-amber-600 dark:text-amber-400 border-b-2 border-amber-600 dark:border-amber-400 bg-gray-50 dark:bg-gray-800'
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}
+              >
+                Carteira
+            </button>
+        </div>
+      </div>
 
+      <div className="w-full max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <main>
           {activeTab === 'individual' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-              <div className="lg:col-span-2">
-                <CalculatorForm onCalculate={handleCalculate} mode="single" />
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+              {/* Form Section */}
+              <div className="lg:col-span-4 xl:col-span-3">
+                <div className="sticky top-24">
+                  <CalculatorForm onCalculate={handleCalculate} mode="single" />
+                </div>
               </div>
-              <div className="lg:col-span-3">
+
+              {/* Results Section */}
+              <div className="lg:col-span-8 xl:col-span-9">
                 {error && (
-                  <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg">
-                    <p className="font-bold">Erro no Cálculo</p>
+                  <div className="bg-red-100 dark:bg-red-900/50 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 p-4 rounded-lg mb-6 shadow-sm">
+                    <p className="font-bold flex items-center"><span className="text-xl mr-2">⚠️</span> Erro no Cálculo</p>
                     <p>{error}</p>
                   </div>
                 )}
                 {!result && !error && (
-                  <div className="h-full flex items-center justify-center bg-gray-800/50 border-2 border-dashed border-gray-700 rounded-lg p-8">
-                    <p className="text-gray-400 text-center">
-                      Preencha os dados ao lado e clique em "Calcular" para ver a projeção dos seus resultados.
+                  <div className="h-[60vh] flex flex-col items-center justify-center bg-white dark:bg-gray-800/50 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl p-8 transition-colors">
+                    <CalculatorIcon className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">Comece sua simulação</h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-center max-w-md mt-2">
+                      Preencha os dados do título à esquerda e clique em "Calcular" para ver a análise completa de rentabilidade.
                     </p>
                   </div>
                 )}
-                {result && <ResultsDisplay result={result} />}
+                {result && <ResultsDisplay result={result} isDarkMode={isDarkMode} />}
               </div>
             </div>
           ) : (
-            <PortfolioManager />
+            <PortfolioManager isDarkMode={isDarkMode} />
           )}
         </main>
 
-        <footer className="text-center mt-12 text-gray-500 text-sm">
+        <footer className="text-center mt-16 pb-8 text-gray-400 dark:text-gray-600 text-xs">
           <p>
-            Esta é uma ferramenta de simulação. A rentabilidade real pode variar.
-            Cálculos baseados na metodologia de projeção de fluxo de caixa da B3/Tesouro Direto.
+            Ferramenta de simulação educacional. Rentabilidade passada não garante resultados futuros.
+            <br />
+            Metodologia baseada nas especificações oficiais do Tesouro Nacional para NTN-B.
           </p>
         </footer>
       </div>

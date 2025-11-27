@@ -26,11 +26,15 @@ const InputField: React.FC<{
   readOnly?: boolean;
 }> = ({ id, label, type, value, onChange, step, min, required = true, adornment, placeholder, readOnly }) => (
   <div>
-    <label htmlFor={id} className="block text-sm font-medium text-gray-300 mb-1">
+    <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 transition-colors">
       {label}
     </label>
-    <div className="relative">
-      {adornment && <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">{adornment}</span>}
+    <div className="relative group">
+      {adornment && (
+        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 dark:text-gray-400 pointer-events-none transition-colors">
+          {adornment}
+        </span>
+      )}
       <input
         type={type}
         id={id}
@@ -42,7 +46,7 @@ const InputField: React.FC<{
         required={required}
         placeholder={placeholder}
         readOnly={readOnly}
-        className={`w-full bg-gray-700/50 border-gray-600 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500 text-white ${adornment ? 'pl-7' : ''} ${readOnly ? 'opacity-60 cursor-not-allowed' : ''}`}
+        className={`w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm py-2.5 px-3 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-gray-900 dark:text-white transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500 ${adornment ? 'pl-8' : ''} ${readOnly ? 'opacity-60 bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : ''}`}
       />
     </div>
   </div>
@@ -118,10 +122,13 @@ export function CalculatorForm({ onCalculate, onAddToPortfolio, mode = 'single' 
 
   return (
     <Card>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <h2 className="text-xl font-semibold text-white mb-4">
-            {mode === 'portfolio' ? 'Adicionar Título à Carteira' : 'Dados do Título'}
-        </h2>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                {mode === 'portfolio' ? 'Novo Título' : 'Dados do Título'}
+            </h2>
+            {mode === 'single' && <span className="text-xs bg-cyan-100 dark:bg-cyan-900 text-cyan-800 dark:text-cyan-200 px-2 py-1 rounded font-medium">Simulação</span>}
+        </div>
         
         {/* Quantity */}
         <InputField 
@@ -134,15 +141,19 @@ export function CalculatorForm({ onCalculate, onAddToPortfolio, mode = 'single' 
             step="0.01"
         />
 
-        <div className="border-t border-gray-700 my-4 pt-4">
-          <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider mb-3">Parâmetros de Inflação (VNA)</h3>
-          <p className="text-xs text-gray-400 mb-3">
-             O VNA e o IPCA do mês são buscados automaticamente na base oficial. Você pode editá-los se necessário.
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
+          <div className="flex items-center mb-3">
+             <h3 className="text-sm font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mr-2">Inflação (VNA)</h3>
+             <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
+          </div>
+          
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 bg-gray-50 dark:bg-gray-800/50 p-2 rounded border border-gray-100 dark:border-gray-700/50">
+             O VNA e o IPCA são preenchidos automaticamente com base na data. Você pode ajustá-los se necessário.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                <InputField 
                   id="projectedIpca" 
-                  label={isPastDate ? "IPCA do Mês da Compra" : "IPCA Projetado Mês"}
+                  label={isPastDate ? "IPCA do Mês" : "IPCA Projetado"}
                   type="number" 
                   value={formData.projectedIpca} 
                   onChange={handleChange} 
@@ -152,7 +163,7 @@ export function CalculatorForm({ onCalculate, onAddToPortfolio, mode = 'single' 
               />
               <InputField 
                   id="vnaPrevious" 
-                  label="VNA Anterior (Calculado)" 
+                  label="VNA de Referência (Dia 15)" 
                   type="number" 
                   value={formData.vnaPrevious} 
                   onChange={handleChange} 
@@ -163,12 +174,16 @@ export function CalculatorForm({ onCalculate, onAddToPortfolio, mode = 'single' 
           </div>
         </div>
 
-        <div className="border-t border-gray-700 my-4 pt-4">
-            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3">Taxas e Datas</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-5">
+            <div className="flex items-center mb-3">
+                <h3 className="text-sm font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mr-2">Taxas e Datas</h3>
+                <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700"></div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <InputField 
                     id="purchaseRate" 
-                    label="Taxa Pactuada (Yield Anual)" 
+                    label="Taxa Pactuada (Yield)" 
                     type="number" 
                     value={formData.purchaseRate} 
                     onChange={handleChange} 
@@ -185,7 +200,7 @@ export function CalculatorForm({ onCalculate, onAddToPortfolio, mode = 'single' 
                 />
             </div>
             
-            <div className="mt-4">
+            <div className="mt-5">
                 <InputField 
                     id="maturityDate" 
                     label="Data de Vencimento" 
@@ -197,11 +212,11 @@ export function CalculatorForm({ onCalculate, onAddToPortfolio, mode = 'single' 
             </div>
         </div>
         
-        <div className="pt-4">
+        <div className="pt-2">
             {mode === 'single' ? (
                 <button
                     type="submit"
-                    className="w-full flex items-center justify-center bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                    className="w-full flex items-center justify-center bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform active:scale-95"
                 >
                     <CalculatorIcon className="w-5 h-5 mr-2" />
                     CALCULAR PREÇO (PU)
@@ -209,7 +224,7 @@ export function CalculatorForm({ onCalculate, onAddToPortfolio, mode = 'single' 
             ) : (
                 <button
                     type="submit"
-                    className="w-full flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 ease-in-out transform hover:scale-105 shadow-lg"
+                    className="w-full flex items-center justify-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform active:scale-95"
                 >
                     <PlusIcon className="w-5 h-5 mr-2" />
                     ADICIONAR À CARTEIRA
