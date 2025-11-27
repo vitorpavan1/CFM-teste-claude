@@ -2,11 +2,13 @@
 import React, { useState } from 'react';
 import { CalculatorForm } from './components/CalculatorForm';
 import { ResultsDisplay } from './components/ResultsDisplay';
+import { PortfolioManager } from './components/PortfolioManager';
 import { type FormData, type CalculationResult } from './types';
 import { calculateNTNB } from './utils/calculator';
-import { TreasureIcon } from './components/Icons';
+import { TreasureIcon, CalculatorIcon, ChartBarIcon } from './components/Icons';
 
 export default function App(): React.ReactElement {
+  const [activeTab, setActiveTab] = useState<'individual' | 'portfolio'>('individual');
   const [result, setResult] = useState<CalculationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,32 +42,66 @@ export default function App(): React.ReactElement {
           </p>
         </header>
 
-        <main className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-          <div className="lg:col-span-2">
-            <CalculatorForm onCalculate={handleCalculate} />
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-8">
+          <div className="bg-gray-800 p-1 rounded-lg inline-flex shadow-lg">
+            <button
+              onClick={() => setActiveTab('individual')}
+              className={`flex items-center px-6 py-2 rounded-md transition-all duration-200 ${
+                activeTab === 'individual'
+                  ? 'bg-gray-700 text-white shadow-sm'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <CalculatorIcon className="w-4 h-4 mr-2" />
+              Simulador Individual
+            </button>
+            <button
+              onClick={() => setActiveTab('portfolio')}
+              className={`flex items-center px-6 py-2 rounded-md transition-all duration-200 ${
+                activeTab === 'portfolio'
+                  ? 'bg-gray-700 text-cyan-300 shadow-sm'
+                  : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <ChartBarIcon className="w-4 h-4 mr-2" />
+              Minha Carteira
+            </button>
           </div>
-          <div className="lg:col-span-3">
-            {error && (
-              <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg">
-                <p className="font-bold">Erro no Cálculo</p>
-                <p>{error}</p>
+        </div>
+
+        <main>
+          {activeTab === 'individual' ? (
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+              <div className="lg:col-span-2">
+                <CalculatorForm onCalculate={handleCalculate} mode="single" />
               </div>
-            )}
-            {!result && !error && (
-              <div className="h-full flex items-center justify-center bg-gray-800/50 border-2 border-dashed border-gray-700 rounded-lg p-8">
-                <p className="text-gray-400 text-center">
-                  Preencha os dados ao lado e clique em "Calcular" para ver a projeção dos seus resultados.
-                </p>
+              <div className="lg:col-span-3">
+                {error && (
+                  <div className="bg-red-900/50 border border-red-700 text-red-300 p-4 rounded-lg">
+                    <p className="font-bold">Erro no Cálculo</p>
+                    <p>{error}</p>
+                  </div>
+                )}
+                {!result && !error && (
+                  <div className="h-full flex items-center justify-center bg-gray-800/50 border-2 border-dashed border-gray-700 rounded-lg p-8">
+                    <p className="text-gray-400 text-center">
+                      Preencha os dados ao lado e clique em "Calcular" para ver a projeção dos seus resultados.
+                    </p>
+                  </div>
+                )}
+                {result && <ResultsDisplay result={result} />}
               </div>
-            )}
-            {result && <ResultsDisplay result={result} />}
-          </div>
+            </div>
+          ) : (
+            <PortfolioManager />
+          )}
         </main>
 
         <footer className="text-center mt-12 text-gray-500 text-sm">
           <p>
             Esta é uma ferramenta de simulação. A rentabilidade real pode variar.
-            Cálculos baseados na metodologia de projeção de fluxo de caixa.
+            Cálculos baseados na metodologia de projeção de fluxo de caixa da B3/Tesouro Direto.
           </p>
         </footer>
       </div>
